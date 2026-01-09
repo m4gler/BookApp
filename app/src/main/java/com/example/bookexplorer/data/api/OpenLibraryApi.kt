@@ -10,7 +10,8 @@ interface OpenLibraryApi {
 
     @GET("subjects/fiction.json")
     suspend fun getBooks(
-        @Query("limit") limit: Int = 20
+        @Query("limit") limit: Int = 20,
+        @Query("offset") offset: Int = 0
     ): BookResponse
 
     @GET("works/{workId}.json")

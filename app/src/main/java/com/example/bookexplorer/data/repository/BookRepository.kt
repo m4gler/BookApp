@@ -8,8 +8,8 @@ class BookRepository(
     private val api: OpenLibraryApi
 ) {
 
-    suspend fun getBooks(): List<Book> {
-        val response = api.getBooks()
+    suspend fun getBooks(limit: Int = 20, offset: Int = 0): List<Book> {
+        val response = api.getBooks(limit = limit, offset = offset)
         return response.works
     }
 

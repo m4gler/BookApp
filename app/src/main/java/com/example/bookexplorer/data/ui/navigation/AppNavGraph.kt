@@ -18,7 +18,9 @@ fun AppNavGraph(
     navController: NavHostController,
     homeViewModel: HomeViewModel,
     bookDetailViewModel: BookDetailViewModel,
-    favoritesViewModel: FavoritesViewModel
+    favoritesViewModel: FavoritesViewModel,
+    onToggleDarkMode: () -> Unit = {},
+    isDarkMode: Boolean = false
 ) {
     NavHost(
         navController = navController,
@@ -34,7 +36,9 @@ fun AppNavGraph(
                 },
                 onFavoritesClick = {
                     navController.navigate(Routes.FAVORITES)
-                }
+                },
+                onToggleDarkMode = onToggleDarkMode,
+                isDarkMode = isDarkMode
             )
         }
 

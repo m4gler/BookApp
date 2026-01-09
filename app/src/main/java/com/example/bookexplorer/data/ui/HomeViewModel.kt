@@ -13,6 +13,8 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
+    private val pageSize = 20
+    private var currentOffset = 0
 
     init {
         loadBooks()
@@ -22,10 +24,43 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
-                val books = repository.getBooks()
-                _uiState.value = HomeUiState.Success(books)
+                currentOffset = 0
+                val books = repository.getBooks(limit = pageSize, offset = currentOffset)
+                currentOffset = books.size
+                _uiState.value = HomeUiState.Success(
+                    books = books,
+                    canLoadMore = books.size == pageSize
+                )
             } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error("Błąd pobierania danych")
+                _uiState.value = HomeUiState.Error("Błąd pobierania danych: ${e.message ?: "nieznany błąd"}")
+            }
+        }
+    }
+
+    fun loadMore() {
+        val state = _uiState.value
+        if (state !is HomeUiState.Success) {
+            return
+        }
+        if (state.isLoadingMore || !state.canLoadMore) {
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = state.copy(isLoadingMore = true, loadMoreError = null)
+            try {
+                val moreBooks = repository.getBooks(limit = pageSize, offset = currentOffset)
+                currentOffset += moreBooks.size
+                _uiState.value = state.copy(
+                    books = state.books + moreBooks,
+                    isLoadingMore = false,
+                    canLoadMore = moreBooks.size == pageSize,
+                    loadMoreError = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = state.copy(
+                    isLoadingMore = false,
+                    loadMoreError = "Błąd ładowania kolejnych danych"
+                )
             }
         }
     }
